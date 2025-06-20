@@ -5,10 +5,12 @@ from scipy.integrate import solve_ivp
 import matplotlib.pyplot as plt
 import os
 
-# Constantes
+# Constantes - MODELO WGS 84
 mu = 3.986004418e14  # [m³/s²] - Terra
 req = 6378.137       # [km]
 rp = 6356.752        # [km]
+f = (req - rp) / req # Achatamento
+e = np.sqrt(1 - (rp/req)**2) #Excentricidade
 
 # --------------------------------------
 # Função para obter posição e velocidade de um TLE usando sgp4
@@ -24,11 +26,24 @@ def obter_estado_tle(linha1, linha2):
 # --------------------------------------
 # EDOs do problema de dois corpos
 def equacoes_orbitais(t, x):
-    r = x[:3]
-    v = x[3:]
-    norma = np.linalg.norm(r)
-    a = -mu * r / norma**3
-    return np.concatenate((v, a))
+    r_vec = x[:3]
+    v_vec = x[3:]
+    r = np.linalg.norm(r_vec)
+
+    # Termo de J2 (achatamento da Terra)
+    J2 = 1.08263e-3
+    R = req * 1000  # converte para metros
+    x_, y_, z_ = r_vec
+
+    fator_J2 = (3/2) * J2 * mu * R**2 / r**5
+    ax_J2 = fator_J2 * x_ * (1 - 5 * (z_**2) / r**2)
+    ay_J2 = fator_J2 * y_ * (1 - 5 * (z_**2) / r**2)
+    az_J2 = fator_J2 * z_ * (3 - 5 * (z_**2) / r**2)
+
+    a_vec = -mu * r_vec / r**3 + np.array([ax_J2, ay_J2, az_J2])
+
+    return np.concatenate((v_vec, a_vec))
+
 
 # --------------------------------------
 # Resolução via solve_ivp
@@ -36,7 +51,7 @@ def simular_orbita(estado_inicial, T, passo, titulo, nome_sat):
     num_pontos = int(np.ceil(T / passo)) + 1
     t_eval = np.linspace(0, T, num_pontos)
     sol = solve_ivp(equacoes_orbitais, [0, T], estado_inicial, t_eval=t_eval,
-                    method='RK45', atol=1e-10, rtol=1e-8)
+                    method='RK45', atol=1e-10, rtol=1e-8) #RANGE KUTTA 45
     plotar_orbita(sol, titulo, nome_sat)
 
 
@@ -139,3 +154,59 @@ satelites = {
 if __name__ == "__main__":
     for nome, (l1, l2) in satelites.items():
         executar_para_tle(nome, l1, l2)
+
+#---------------------------------------
+# Fluxograma de execução
+# ┌────────────────────────────┐
+# │ Início (main)              │
+# └────────────┬───────────────┘
+#              │
+#              ▼
+# ┌────────────────────────────┐
+# │ Para cada satélite         │
+# │ (nome, linha1, linha2)     │
+# └────────────┬───────────────┘
+#              ▼
+# ┌────────────────────────────┐
+# │ obter_estado_tle()         │
+# │ - Converte TLE para        │
+# │   posição e velocidade     │
+# └────────────┬───────────────┘
+#              ▼
+# ┌────────────────────────────┐
+# │ Calcular:                  │
+# │ - módulo de r e v          │
+# │ - energia específica       │
+# │ - semi-eixo maior (a)      │
+# │ - período orbital (T)      │
+# └────────────┬───────────────┘
+#              ▼
+# ┌────────────────────────────┐
+# │ simular_orbita()           │
+# │ - define t_eval            │
+# │ - resolve EDO com solve_ivp│
+# └────────────┬───────────────┘
+#              ▼
+# ┌────────────────────────────┐
+# │ equacoes_orbitais()        │
+# │ - calcula aceleração       │
+# │   gravitacional (-μr/r³)   │
+# │ - (opcional: termo J2)     │
+# └────────────┬───────────────┘
+#              ▼
+# ┌────────────────────────────┐
+# │ plotar_orbita()            │
+# │ - Plota órbita 3D          │
+# │ - Plota Terra oblata       │
+# │ - Salva como imagem        │
+# └────────────┬───────────────┘
+#              ▼
+# ┌────────────────────────────┐
+# │ Fim do loop                │
+# │ (volta ao próximo satélite)│
+# └────────────┬───────────────┘
+#              ▼
+# ┌────────────────────────────┐
+# │ Fim do programa            │
+# └────────────────────────────┘
+
