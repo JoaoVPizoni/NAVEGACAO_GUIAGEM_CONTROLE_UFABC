@@ -1,4 +1,4 @@
-# Simulador de Órbitas com TLEs e Integração Numérica
+# PROBLEMA 1 - Simulador de Órbitas com TLEs e Integração Numérica
 
 Este projeto realiza simulações da órbita de satélites em torno da Terra a partir de seus dados TLE (Two-Line Element), utilizando o modelo de dois corpos e integração numérica com `solve_ivp`. A órbita é visualizada em 3D juntamente com uma representação da Terra oblata.
 
