@@ -58,7 +58,7 @@ def simular_orbita(estado_inicial, T, passo, titulo, nome_sat):
 # --------------------------------------
 # Plotagem da órbita e da Terra
 def plotar_orbita(sol, titulo, nome_sat):
-    # Criar diretório se não existir
+    import os
     pasta = "Solucao_Problema_Proposto/Dois_Corpos/figuras"
     os.makedirs(pasta, exist_ok=True)
 
@@ -69,7 +69,6 @@ def plotar_orbita(sol, titulo, nome_sat):
     z = sol.y[2] / 1000
     ax.plot(x, y, z, label='Órbita')
 
-    # Esfera oblata (Terra)
     u, v = np.mgrid[0:2*np.pi:40j, 0:np.pi:20j]
     xe = req * np.cos(u) * np.sin(v)
     ye = req * np.sin(u) * np.sin(v)
@@ -88,8 +87,14 @@ def plotar_orbita(sol, titulo, nome_sat):
     # Salvar figura
     nome_arquivo = os.path.join(pasta, f"{nome_sat.replace(' ', '_')}.png")
     plt.savefig(nome_arquivo, dpi=300)
-    plt.close()
     print(f"Figura salva em: {nome_arquivo}")
+
+    # Mostrar na tela
+    plt.show()
+
+    # Agora pode fechar para liberar memória (opcional)
+    plt.close(fig)
+
 
 # --------------------------------------
 # Igualar escalas para evitar distorção visual
@@ -113,7 +118,7 @@ def igualar_escalas(ax):
     ax.set_zlim3d([z_middle - max_range/2, z_middle + max_range/2])
 
 # --------------------------------------
-# Trajetória de acordo com a Energia Mecânica Específica
+# Trajetória de acordo com a Energia Mecânica Específica e Excentricidade
 def consultar_trajetoria(epsilon, e):
     if epsilon<0 and e==0:
         return 'Circular'
