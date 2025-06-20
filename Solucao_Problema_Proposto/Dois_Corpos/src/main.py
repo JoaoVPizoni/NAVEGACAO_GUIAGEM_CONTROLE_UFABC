@@ -112,6 +112,19 @@ def igualar_escalas(ax):
     ax.set_ylim3d([y_middle - max_range/2, y_middle + max_range/2])
     ax.set_zlim3d([z_middle - max_range/2, z_middle + max_range/2])
 
+# --------------------------------------
+# Trajetória de acordo com a Energia Mecânica Específica
+def consultar_trajetoria(epsilon, e):
+    if epsilon<0 and e==0:
+        return 'Circular'
+    elif epsilon<0:
+        return 'Elíptica'
+    elif epsilon==0:
+        return 'Parabólica'
+    else:
+        return 'Hiperbólica'
+
+
 
 # --------------------------------------
 # Simular para um satélite
@@ -121,10 +134,18 @@ def executar_para_tle(nome, linha1, linha2):
     estado_inicial = np.concatenate((r, v))
     mod_r = np.linalg.norm(r)
     mod_v = np.linalg.norm(v)
-    epsilon = (mod_v**2) / 2 - mu / mod_r
-    a = -mu / (2 * epsilon)
+    epsilon = (mod_v**2) / 2 - mu / mod_r #Energia Mecânica Específica
+    a = -mu / (2 * epsilon) # semi-eixo maior
     T = 2 * np.pi * np.sqrt(a**3 / mu)  # período orbital
+    h = np.cross(r, v) # Momento Angular Específico
+    e_vec = np.cross(v, h) / mu - r / mod_r
+    e = np.linalg.norm(e_vec) #Excentricidade da Órbita
+    print(f"Energia Mecânica Específica (J): {epsilon:.2f}")
+    print(f"Momento Angular Específico (m²/s): {h}")
+    print(f"Possível Trajetória: {consultar_trajetoria(epsilon, e)}")
+    print(f"Semi-eixo maior (m): {a:.2f}")
     print(f"Período orbital (s): {T:.2f}")
+    print(f"Excentricidade: {e:.6f}")
     simular_orbita(estado_inicial, T, T * 0.01, f"Órbita: {nome}", nome)
 
 
