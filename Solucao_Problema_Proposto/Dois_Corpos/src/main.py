@@ -204,7 +204,9 @@ if __name__ == "__main__":
 # │ - módulo de r e v          │
 # │ - energia específica       │
 # │ - semi-eixo maior (a)      │
-# │ - período orbital (T)      │
+# │ - período orbital (T)      |
+# | - Excentricidade           │
+ #| - Momento Angular          │
 # └────────────┬───────────────┘
 #              ▼
 # ┌────────────────────────────┐
