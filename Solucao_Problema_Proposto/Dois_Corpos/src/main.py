@@ -151,7 +151,16 @@ def executar_para_tle(nome, linha1, linha2):
     print(f"Semi-eixo maior (m): {a:.2f}")
     print(f"Período orbital (s): {T:.2f}")
     print(f"Excentricidade: {e:.6f}")
-    simular_orbita(estado_inicial, T, T * 0.01, f"Órbita: {nome}", nome)
+    
+    passo = T * 0.01
+
+    simular_orbita(estado_inicial, T, passo, f"Órbita: {nome}", nome)
+
+    # Simulação para 1 período orbital
+    simular_orbita(estado_inicial, T, passo, f"Órbita (1 período) - {nome}", f"{nome}_1periodo")
+
+    # Simulação para 50 períodos orbitais
+    simular_orbita(estado_inicial, 50*T, passo, f"Órbita (50 períodos) - {nome}", f"{nome}_50periodos")
 
 
 # --------------------------------------
