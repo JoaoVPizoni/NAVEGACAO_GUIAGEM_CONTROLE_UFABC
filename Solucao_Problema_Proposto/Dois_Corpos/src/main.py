@@ -3,6 +3,7 @@ from datetime import datetime
 import numpy as np
 from scipy.integrate import solve_ivp
 import matplotlib.pyplot as plt
+import os
 
 # Constantes
 mu = 3.986004418e14  # [m³/s²] - Terra
@@ -31,27 +32,35 @@ def equacoes_orbitais(t, x):
 
 # --------------------------------------
 # Resolução via solve_ivp
-def simular_orbita(estado_inicial, T, passo, titulo):
+def simular_orbita(estado_inicial, T, passo, titulo, nome_sat):
     num_pontos = int(np.ceil(T / passo)) + 1
     t_eval = np.linspace(0, T, num_pontos)
     sol = solve_ivp(equacoes_orbitais, [0, T], estado_inicial, t_eval=t_eval,
                     method='RK45', atol=1e-10, rtol=1e-8)
-    plotar_orbita(sol, titulo)
+    plotar_orbita(sol, titulo, nome_sat)
+
 
 # --------------------------------------
 # Plotagem da órbita e da Terra
-def plotar_orbita(sol, titulo):
+def plotar_orbita(sol, titulo, nome_sat):
+    # Criar diretório se não existir
+    pasta = "Solucao_Problema_Proposto/Dois_Corpos/figuras"
+    os.makedirs(pasta, exist_ok=True)
+
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
     x = sol.y[0] / 1000
     y = sol.y[1] / 1000
     z = sol.y[2] / 1000
     ax.plot(x, y, z, label='Órbita')
+
+    # Esfera oblata (Terra)
     u, v = np.mgrid[0:2*np.pi:40j, 0:np.pi:20j]
     xe = req * np.cos(u) * np.sin(v)
     ye = req * np.sin(u) * np.sin(v)
     ze = rp * np.cos(v)
     ax.plot_surface(xe, ye, ze, color='b', alpha=0.3)
+
     igualar_escalas(ax)
     ax.set_title(titulo)
     ax.set_xlabel("x [km]")
@@ -60,7 +69,12 @@ def plotar_orbita(sol, titulo):
     ax.legend()
     ax.set_box_aspect([1, 1, 1])
     plt.tight_layout()
-    plt.show()
+
+    # Salvar figura
+    nome_arquivo = os.path.join(pasta, f"{nome_sat.replace(' ', '_')}.png")
+    plt.savefig(nome_arquivo, dpi=300)
+    plt.close()
+    print(f"Figura salva em: {nome_arquivo}")
 
 # --------------------------------------
 # Igualar escalas para evitar distorção visual
@@ -96,7 +110,8 @@ def executar_para_tle(nome, linha1, linha2):
     a = -mu / (2 * epsilon)
     T = 2 * np.pi * np.sqrt(a**3 / mu)  # período orbital
     print(f"Período orbital (s): {T:.2f}")
-    simular_orbita(estado_inicial, T, T * 0.01, f"Órbita: {nome}")
+    simular_orbita(estado_inicial, T, T * 0.01, f"Órbita: {nome}", nome)
+
 
 # --------------------------------------
 # TLEs dos satélites
