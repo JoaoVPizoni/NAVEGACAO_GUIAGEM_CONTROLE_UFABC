@@ -3,4 +3,3 @@ scipy
 matplotlib
 sgp4
 datetime
-os
