@@ -91,8 +91,6 @@ def plotar_orbita(sol, titulo, nome_sat):
 
     # Mostrar na tela
     plt.show()
-
-    # Agora pode fechar para liberar memória (opcional)
     plt.close(fig)
 
 
